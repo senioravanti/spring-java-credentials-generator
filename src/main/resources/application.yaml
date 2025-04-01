@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: credentialsgenerator
+
+server:
+  port: 8000
+  servlet:
+    context-path: '/api'
+  address: 0.0.0.0
+
+app:
+  password-policy:
+    min-length: 5
+    max-length: 8
+    min-unique-chars-count: 2
+
+    salt-length: 16
+    hashing-iterations: 12345
+
+    key-length: 160
+
+    hashing-algorithm: 'PBKDF2WithHmacSHA512'
