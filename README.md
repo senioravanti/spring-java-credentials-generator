@@ -1,8 +1,38 @@
-# Утилита для генерации паролей
+# Утилита для генерации паролей и тестовых запросов к серверу авторизации OAuth2 
 
-## Примеры запросов
+## Выполнить сборку образа
 
-### На генерацию запроса на получение кода
+Multiplatform build требует включенного параметра containerd image store в настройках Docker Desktop, [см.](https://docs.docker.com/build/building/multi-platform/)
+
+Для выполнения команды ниже необходимо перейти в корень проекта.
+
+Зададим прослушиваемый контейнером порт как переменную среды
+
+```sh
+CREDENTIALS_GENERATOR_PORT=8005
+```
+
+```sh
+clear ; \
+docker build . \
+  -f ./docker/Dockerfile \
+  --platform 'linux/arm64,linux/amd64' \
+  --tag 'stradiavanti/credentials-generator:0.0.1' \
+  --build-arg "CREDENTIALS_GENERATOR_PORT=$CREDENTIALS_GENERATOR_PORT"
+```
+
+```sh
+clear ; \
+docker run -d \
+  -p "$CREDENTIALS_GENERATOR_PORT:$CREDENTIALS_GENERATOR_PORT" \
+  --name 'credentials-generator' \
+  --restart 'on-failure:3' \
+  'stradiavanti/credentials-generator:0.0.1'
+```
+
+## Примеры запросов к генератору
+
+### Запрос на генерацию запроса на получение кода
 
 Минимизируем `json`
 
@@ -25,8 +55,8 @@ EOF
 ```sh
 clear ; \
 curl -sS -X POST \
-    --json "$CLIENT_REQUEST"\
-    http://localhost:8080/api/oauth2/authorization-url | jq
+  --json "$CLIENT_REQUEST" \
+  "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/oauth2/authorization-url" | jq
 ```
 
 ### На генерацию учетных данных
@@ -34,10 +64,10 @@ curl -sS -X POST \
 ```sh
 clear ; \
 curl -sS \
-  http://localhost:8080/api/credentials/bcrypt | jq
+  "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/credentials/bcrypt" | jq
 ```
 
-### На генерацию запроса на получение токена
+### Запрос на генерацию запроса на получение токена
 
 ```sh
 TOKEN_REQUEST=$(cat <<EOF 
@@ -60,6 +90,6 @@ EOF
 ```sh
 clear ; \
 curl -sS -X POST \
-    --json "$TOKEN_REQUEST"\
-    http://localhost:8080/api/oauth2/token-request
+  --json "$TOKEN_REQUEST" \
+  "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/oauth2/token-request"
 ```
