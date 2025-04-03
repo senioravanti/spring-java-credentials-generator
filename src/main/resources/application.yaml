@@ -3,7 +3,7 @@ spring:
     name: credentialsgenerator
 
 server:
-  port: 8000
+  port: '${CREDENTIALS_GENERATOR_PORT:8080}'
   servlet:
     context-path: '/api'
   address: 0.0.0.0

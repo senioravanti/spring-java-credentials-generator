@@ -1,11 +1,14 @@
 package ru.manannikov.credentialsgenerator.services;
 
 
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.manannikov.credentialsgenerator.dto.PasswordDto;
+import ru.manannikov.credentialsgenerator.dto.BCryptPasswordDto;
+import ru.manannikov.credentialsgenerator.dto.Pbkdf2PasswordDto;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -13,12 +16,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
-import static ru.manannikov.credentialsgenerator.utils.PasswordGeneratorUtils.*;
+import ru.manannikov.credentialsgenerator.utils.PasswordGeneratorUtils;
 
 
 @Service("passwordGenerator")
+@RequiredArgsConstructor
 public class PasswordGeneratorService {
     private static final Logger logger = LogManager.getLogger(PasswordGeneratorService.class);
+
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.password-policy.min-length}")
     private Short minLength;
@@ -57,26 +63,30 @@ public class PasswordGeneratorService {
         return Base64.getEncoder().encodeToString(pbkdf2Password);
     }
 
-    public PasswordDto generatePbkdf2Password()
-    {
+    private String generateRawPassword() {
         String rawPassword = null;
         long uniqueCharsCount = 0L;
         do {
-            rawPassword = generateRawPassword(
-                choosePasswordLength(minLength, maxLength)
+            rawPassword = PasswordGeneratorUtils.generateRawPassword(
+                PasswordGeneratorUtils.choosePasswordLength(minLength, maxLength)
             );
             uniqueCharsCount = rawPassword.chars().distinct().count();
         } while (uniqueCharsCount < minUniqueCharsCount);
-
         logger.debug("rawPassword: {}", rawPassword);
+        return rawPassword;
+    }
 
-        byte[] saltInBytes = generateSalt(saltLength);
+    public Pbkdf2PasswordDto generatePbkdf2Password()
+    {
+        final String rawPassword = generateRawPassword();
+
+        byte[] saltInBytes = PasswordGeneratorUtils.generateSalt(saltLength);
 
         try {
             String pbkdf2Password = encodePassword(rawPassword, saltInBytes);
             String salt = Base64.getEncoder().encodeToString(saltInBytes);
 
-            return new PasswordDto(
+            return new Pbkdf2PasswordDto(
                 rawPassword,
                 pbkdf2Password,
                 salt
@@ -85,5 +95,14 @@ public class PasswordGeneratorService {
             logger.error("Произошла ошибка при генерации хеша пароля:\n{}", ex.toString());
             throw new RuntimeException(ex);
         }
+    }
+
+    public BCryptPasswordDto generateBcryptPassword() {
+        final String rawPassword = generateRawPassword();
+
+        return new BCryptPasswordDto(
+            rawPassword,
+            passwordEncoder.encode(rawPassword)
+        );
     }
 }
