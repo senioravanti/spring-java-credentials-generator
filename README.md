@@ -16,6 +16,7 @@ CREDENTIALS_GENERATOR_PORT=8005
 clear ; \
 docker build . \
   -f ./docker/Dockerfile \
+  --push\
   --platform 'linux/arm64,linux/amd64' \
   --tag 'stradiavanti/credentials-generator:0.0.1' \
   --build-arg "CREDENTIALS_GENERATOR_PORT=$CREDENTIALS_GENERATOR_PORT"
