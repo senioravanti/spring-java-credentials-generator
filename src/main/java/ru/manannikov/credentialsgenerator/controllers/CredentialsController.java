@@ -3,6 +3,7 @@ package ru.manannikov.credentialsgenerator.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.datafaker.Faker;
 import org.springframework.web.bind.annotation.*;
 import ru.manannikov.credentialsgenerator.dto.BCryptPasswordDto;
 import ru.manannikov.credentialsgenerator.dto.CredentialsDto;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CredentialsController {
     private final PasswordGeneratorService passwordGeneratorService;
+    private final Faker faker;
 
     // Должен принимать dto с password policy для генератора.
     @GetMapping("/pbkdf2")
@@ -31,6 +33,7 @@ public class CredentialsController {
         logger.info("generating bcrypt password ...");
         return new CredentialsDto<>(
             UUID.randomUUID().toString(),
+            faker.internet().username().replace('.', '-'),
             passwordGeneratorService.generateBcryptPassword()
         );
     }

@@ -33,6 +33,14 @@ docker run -d \
 
 ## Примеры запросов к генератору
 
+### На генерацию учетных данных
+
+```sh
+clear ; \
+curl -sS \
+  "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/credentials/bcrypt" | jq
+```
+
 ### Запрос на генерацию запроса на получение кода
 
 Минимизируем `json`
@@ -58,14 +66,6 @@ clear ; \
 curl -sS -X POST \
   --json "$CLIENT_REQUEST" \
   "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/oauth2/authorization-url" | jq
-```
-
-### На генерацию учетных данных
-
-```sh
-clear ; \
-curl -sS \
-  "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/credentials/bcrypt" | jq
 ```
 
 ### Запрос на генерацию запроса на получение токена
