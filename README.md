@@ -1,5 +1,11 @@
 # Утилита для генерации паролей и тестовых запросов к серверу авторизации OAuth2 
 
+## Запустить приложение локально 
+
+```
+clear ; gradle bootRun
+```
+
 ## Выполнить сборку образа
 
 Multiplatform build требует включенного параметра containerd image store в настройках Docker Desktop, [см.](https://docs.docker.com/build/building/multi-platform/)
@@ -18,13 +24,13 @@ docker build . \
   -f ./docker/Dockerfile \
   --push\
   --platform 'linux/arm64,linux/amd64' \
-  --tag 'stradiavanti/credentials-generator:0.0.1' \
-  --build-arg "CREDENTIALS_GENERATOR_PORT=$CREDENTIALS_GENERATOR_PORT"
+  --tag 'stradiavanti/credentials-generator:0.0.1'
 ```
 
 ```sh
 clear ; \
 docker run -d \
+  -e "CREDENTIALS_GENERATOR_PORT=$CREDENTIALS_GENERATOR_PORT" \
   -p "$CREDENTIALS_GENERATOR_PORT:$CREDENTIALS_GENERATOR_PORT" \
   --name 'credentials-generator' \
   --restart 'on-failure:3' \

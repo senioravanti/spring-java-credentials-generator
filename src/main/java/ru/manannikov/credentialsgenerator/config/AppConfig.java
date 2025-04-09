@@ -8,12 +8,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Locale;
+
 @Configuration
 public class AppConfig {
     @Bean
-    public Faker faker() {
+    public Faker globalFaker() {
         return new Faker();
     }
+    @Bean
+    public Faker ruFaker() { return new Faker(Locale.of("ru")); }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
