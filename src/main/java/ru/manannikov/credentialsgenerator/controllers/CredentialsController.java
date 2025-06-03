@@ -14,6 +14,7 @@ import ru.manannikov.credentialsgenerator.services.PasswordGeneratorService;
 import ru.manannikov.credentialsgenerator.utils.UsernameGenerator;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -37,11 +38,12 @@ public class CredentialsController {
 
     @GetMapping("/bcrypt")
     public CredentialsResponse generateBcryptCredentials() {
-        logger.info("generating bcrypt password ...");
         final String username = globalFaker.internet().username().replace('.', '-');
 
         final String userId = UUID.randomUUID().toString();
+
         final String email = globalFaker.internet().emailAddress(username);
+        final String phoneNumber = ruFaker.phoneNumber().cellPhoneInternational();
 
         final String[] fullName = ruFaker.name().fullName().split("\\s+");
         final String lastName = fullName[0];
@@ -58,16 +60,16 @@ public class CredentialsController {
         final var credentialsJson = new CredentialsDto<>(
             userId,
             username,
-            email,
-
+            email, phoneNumber,
             lastName, firstName, middleName,
-
             passwordDto
         );
 
         final String credentialsCsv = String.format(
-            "'%s', '%s', '%s', '%s', '%s', '%s', '%s'",
-            userId, username, passwordDto.bcryptPassword(), email, lastName, firstName, middleName
+            "('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s)",
+            userId, username, phoneNumber,
+            passwordDto.bcryptPassword(), email,
+            lastName, firstName, Optional.ofNullable(middleName).map(it -> String.format("'%s'", it)).orElse("DEFAULT")
         );
 
         return new CredentialsResponse(
