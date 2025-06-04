@@ -1,4 +1,6 @@
-FROM gradle:jdk21-corretto AS build
+FROM alpine:3.21 AS build
+RUN apk add --no-cache --update \
+    gradle
 
 WORKDIR /usr/local/src/credentials-generator-service/
 COPY ./src/ ./src/
@@ -6,11 +8,11 @@ COPY ./lombok.config ./build.gradle.kts ./
 RUN gradle clean assemble
 
 # Второй этап
-FROM eclipse-temurin:21-jre-noble
+FROM alpine:3.21
+RUN apk add --no-cache --update \
+    openjdk21
 
 COPY --from=build "/usr/local/src/credentials-generator-service/build/libs/*.jar" /opt/credentials-generator-service.jar
 
-ENV CREDENTIALS_GENERATOR_PORT=$CREDENTIALS_GENERATOR_PORT
-EXPOSE $CREDENTIALS_GENERATOR_PORT
-
+EXPOSE 8080
 ENTRYPOINT ["java","-jar","/opt/credentials-generator-service.jar" ]

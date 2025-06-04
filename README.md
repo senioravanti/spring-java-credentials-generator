@@ -20,21 +20,18 @@ CREDENTIALS_GENERATOR_PORT=8005
 
 ```sh
 clear ; \
-docker build . \
-  -f ./docker/Dockerfile \
-  --push\
-  --platform 'linux/arm64,linux/amd64' \
-  --tag 'stradiavanti/credentials-generator:0.0.1'
+docker build . -f ./docker/Dockerfile \
+  --platform 'linux/arm64,linux/amd64' --push --no-cache \
+  -t 'stradiavanti/credentials-generator:0.1'
 ```
 
 ```sh
 clear ; \
 docker run -d \
-  -e "CREDENTIALS_GENERATOR_PORT=$CREDENTIALS_GENERATOR_PORT" \
-  -p "$CREDENTIALS_GENERATOR_PORT:$CREDENTIALS_GENERATOR_PORT" \
+  -p "$CREDENTIALS_GENERATOR_PORT:8080" \
   --name 'credentials-generator' \
   --restart 'on-failure:3' \
-  'stradiavanti/credentials-generator:0.0.1'
+  'stradiavanti/credentials-generator:0.1'
 ```
 
 ## Примеры запросов к генератору
@@ -42,9 +39,8 @@ docker run -d \
 ### На генерацию учетных данных
 
 ```sh
-clear ; \
-curl -sS \
-  "http://localhost:$CREDENTIALS_GENERATOR_PORT/api/credentials/bcrypt" | jq
+clear ; curl -v \
+  "http://localhost:${CREDENTIALS_GENERATOR_PORT}/api/credentials/bcrypt" | jq
 ```
 
 ### Запрос на генерацию запроса на получение кода
